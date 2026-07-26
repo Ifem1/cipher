@@ -3,62 +3,116 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 
 const STOPS = [
-  { href: "/", label: "Observatory", icon: "◉" },
-  { href: "/subjects/new", label: "New Circuit", icon: "⊕" },
-  { href: "/profile", label: "Profile", icon: "◈" },
+  { href: "/", label: "Observatory", short: "OBS" },
+  { href: "/subjects/new", label: "New Circuit", short: "NEW" },
+  { href: "/profile", label: "Profile", short: "PROF" },
 ];
 
 export function OrbitalNav() {
   const pathname = usePathname();
+
   return (
     <nav
-      className="orbital-nav"
       aria-label="Main navigation"
-      role="navigation"
+      style={{
+        position: "fixed",
+        top: 56,
+        left: 0,
+        bottom: 0,
+        width: 120,
+        zIndex: 40,
+        display: "flex",
+        flexDirection: "column",
+        alignItems: "center",
+        justifyContent: "center",
+        padding: "32px 0",
+        background: "rgba(8,8,20,0.92)",
+        backdropFilter: "blur(12px)",
+        borderRight: "1px solid var(--border)",
+      }}
     >
-      <div
-        style={{
-          paddingTop: 24,
-          paddingBottom: 24,
-        }}
-      >
-        <div
-          style={{
-            paddingLeft: 12,
-            paddingBottom: 20,
-            fontFamily: "var(--font-display)",
-            fontSize: 11,
-            letterSpacing: "0.2em",
-            color: "var(--confirmed)",
-            textTransform: "uppercase",
-          }}
-        >
-          CIPHER
-        </div>
+      {/* Vertical trace line */}
+      <div style={{
+        position: "absolute",
+        top: "50%",
+        left: "50%",
+        transform: "translate(-50%, -50%)",
+        width: 1,
+        height: "60%",
+        background: "linear-gradient(to bottom, transparent, var(--border) 30%, var(--border) 70%, transparent)",
+        zIndex: 0,
+      }}/>
 
-        {STOPS.map((stop) => {
-          const active = pathname === stop.href;
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 32, alignItems: "center" }}>
+        {STOPS.map((stop, i) => {
+          const active = pathname === stop.href || (stop.href !== "/" && pathname.startsWith(stop.href));
           return (
             <Link
               key={stop.href}
               href={stop.href}
-              className="orbital-stop"
-              data-active={active}
               aria-current={active ? "page" : undefined}
+              aria-label={stop.label}
+              title={stop.label}
               style={{
-                borderLeftColor: active ? "var(--confirmed)" : "transparent",
-                background: active ? "rgba(0,255,179,0.04)" : undefined,
-                color: active ? "var(--text)" : "var(--muted)",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "center",
+                gap: 8,
+                textDecoration: "none",
+                transition: "opacity 0.2s",
+                opacity: active ? 1 : 0.45,
               }}
+              onMouseEnter={e => (e.currentTarget.style.opacity = "1")}
+              onMouseLeave={e => (e.currentTarget.style.opacity = active ? "1" : "0.45")}
             >
-              <span
-                className="orbital-stop-dot"
-                style={{
-                  background: active ? "var(--confirmed)" : "currentColor",
-                }}
-                aria-hidden="true"
-              />
-              <span className="orbital-stop-label">{stop.label}</span>
+              {/* Node circle */}
+              <div style={{
+                width: 36,
+                height: 36,
+                borderRadius: "50%",
+                border: `${active ? 2 : 1}px solid ${active ? "var(--confirmed)" : "var(--border)"}`,
+                background: active ? "rgba(0,255,179,0.08)" : "var(--deep)",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                position: "relative",
+                transition: "border-color 0.2s, background 0.2s",
+              }}>
+                {/* Inner dot */}
+                <div style={{
+                  width: active ? 10 : 6,
+                  height: active ? 10 : 6,
+                  borderRadius: "50%",
+                  background: active ? "var(--confirmed)" : "var(--muted)",
+                  transition: "all 0.2s var(--ease-surge)",
+                }}/>
+                {/* Active indicator — left-edge bar */}
+                {active && (
+                  <div style={{
+                    position: "absolute",
+                    left: -19,
+                    top: "50%",
+                    transform: "translateY(-50%)",
+                    width: 3,
+                    height: 20,
+                    background: "var(--confirmed)",
+                    borderRadius: "0 2px 2px 0",
+                  }}/>
+                )}
+              </div>
+
+              {/* Label */}
+              <span style={{
+                fontFamily: "var(--font-mono)",
+                fontSize: 8,
+                letterSpacing: "0.12em",
+                textTransform: "uppercase",
+                color: active ? "var(--confirmed)" : "var(--muted)",
+                transition: "color 0.2s",
+                lineHeight: 1,
+              }}>
+                {stop.short}
+              </span>
             </Link>
           );
         })}
