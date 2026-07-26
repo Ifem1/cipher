@@ -1,0 +1,225 @@
+/* CIPHER Node System — Circuit Component Base Styles */
+
+/* Circuit canvas */
+.circuit-canvas {
+  background: var(--void);
+  position: relative;
+  overflow: hidden;
+}
+
+/* Node housing */
+.node-housing {
+  position: absolute;
+  width: var(--node-size);
+  height: var(--node-size);
+  border-radius: 50%;
+  border: 2px solid var(--border);
+  background: var(--raised);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  transition: border-color var(--expand-duration) ease,
+              box-shadow var(--expand-duration) ease;
+  user-select: none;
+}
+
+.node-housing:hover {
+  border-color: var(--sub);
+  box-shadow: 0 0 16px rgba(136, 136, 204, 0.2);
+}
+
+.node-housing[data-type="TERMINAL"] {
+  border-radius: 8px;
+}
+
+.node-housing[data-state="CONFIRMED"] {
+  border-color: var(--confirmed);
+  box-shadow: 0 0 20px var(--confirmed-glow);
+}
+
+.node-housing[data-state="CONTRADICTED"] {
+  border-color: var(--contradicted);
+  box-shadow: 0 0 20px var(--contradicted-glow);
+}
+
+.node-housing[data-state="PARTIALLY_CONFIRMED"],
+.node-housing[data-state="SUBSTANTIALLY_CONFIRMED"] {
+  border-color: var(--partial);
+  box-shadow: 0 0 20px var(--partial-glow);
+}
+
+/* Weight arc ring */
+.weight-arc {
+  position: absolute;
+  inset: -6px;
+  border-radius: 50%;
+  pointer-events: none;
+}
+
+/* Weight label */
+.weight-label {
+  font-family: var(--font-mono);
+  font-size: 9px;
+  color: var(--sub);
+  position: absolute;
+  bottom: -18px;
+  left: 50%;
+  transform: translateX(-50%);
+  white-space: nowrap;
+}
+
+/* Trace edge */
+.trace-edge {
+  pointer-events: none;
+  stroke: var(--trace);
+  stroke-width: 2;
+  fill: none;
+}
+
+.trace-edge[data-active="true"] {
+  stroke: var(--confirmed);
+  stroke-dasharray: 6 3;
+  animation: trace-flow 1s linear infinite;
+}
+
+@keyframes trace-flow {
+  to { stroke-dashoffset: -18; }
+}
+
+/* Weight balance */
+.weight-balance {
+  background: var(--raised);
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  padding: 12px 16px;
+}
+
+.weight-balance-bar {
+  height: 4px;
+  background: var(--trace);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-top: 8px;
+}
+
+.weight-balance-fill {
+  height: 100%;
+  background: var(--partial);
+  border-radius: 2px;
+  transition: width 300ms ease, background 300ms ease;
+}
+
+.weight-balance-fill[data-complete="true"] {
+  background: var(--confirmed);
+}
+
+/* Signal loader */
+.signal-loader {
+  animation: signal-pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes signal-pulse {
+  0%, 100% { opacity: 0.3; }
+  50% { opacity: 1; }
+}
+
+/* Orbital nav */
+.orbital-nav {
+  position: fixed;
+  left: 0;
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  gap: 0;
+  align-items: flex-start;
+}
+
+.orbital-stop {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px 14px 12px;
+  cursor: pointer;
+  border-left: 2px solid transparent;
+  transition: border-color 200ms ease, background 200ms ease;
+  text-decoration: none;
+  color: var(--muted);
+}
+
+.orbital-stop:hover,
+.orbital-stop[data-active="true"] {
+  border-left-color: var(--confirmed);
+  background: rgba(0, 255, 179, 0.04);
+  color: var(--text);
+}
+
+.orbital-stop-dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: currentColor;
+  flex-shrink: 0;
+}
+
+.orbital-stop-label {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  white-space: nowrap;
+}
+
+/* Score rail */
+.score-rail {
+  display: flex;
+  align-items: stretch;
+  gap: 2px;
+  height: 32px;
+}
+
+.score-segment {
+  flex: 1;
+  border-radius: 2px;
+  background: var(--trace);
+  transition: background 400ms ease;
+}
+
+/* Player color utilities */
+.player-1 { color: var(--p1); }
+.player-2 { color: var(--p2); }
+.player-3 { color: var(--p3); }
+.player-4 { color: var(--p4); }
+.player-5 { color: var(--p5); }
+.player-6 { color: var(--p6); }
+
+.player-bg-1 { background: var(--p1); }
+.player-bg-2 { background: var(--p2); }
+.player-bg-3 { background: var(--p3); }
+.player-bg-4 { background: var(--p4); }
+.player-bg-5 { background: var(--p5); }
+.player-bg-6 { background: var(--p6); }
+
+/* Status chips */
+.status-chip {
+  font-family: var(--font-mono);
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  padding: 3px 8px;
+  border-radius: 4px;
+  border: 1px solid;
+}
+
+.status-chip[data-status="OPEN"] { color: var(--confirmed); border-color: var(--confirmed); background: var(--confirmed-glow); }
+.status-chip[data-status="COMMITTED"] { color: var(--partial); border-color: var(--partial); background: var(--partial-glow); }
+.status-chip[data-status="CLAIMABLE"] { color: var(--confirmed); border-color: var(--confirmed); background: var(--confirmed-glow); }
+.status-chip[data-status="CANCELLED"],
+.status-chip[data-status="REFUNDED"] { color: var(--contradicted); border-color: var(--contradicted); background: var(--contradicted-glow); }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  .trace-edge[data-active="true"] { animation: none; }
+  .signal-loader { animation: none; opacity: 1; }
+}

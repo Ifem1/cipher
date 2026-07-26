@@ -1,0 +1,20 @@
+# Python
+__pycache__/
+.pytest_cache/
+*.py[cod]
+
+# GenLayer / local outputs
+cipher/artifacts/
+
+# Frontend
+cipher/frontend/node_modules/
+cipher/frontend/.next/
+cipher/frontend/out/
+cipher/frontend/build/
+cipher/frontend/.env*
+cipher/frontend/next-env.d.ts
+cipher/frontend/.next-dev*.log
+
+# Logs and OS files
+*.log
+.DS_Store

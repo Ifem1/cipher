@@ -1,0 +1,50 @@
+/* CIPHER Design System — Color & Typography Tokens */
+:root {
+  /* Void palette */
+  --void: #030309;
+  --deep: #080814;
+  --surface: #0D0D1F;
+  --raised: #12122A;
+  --trace: #1E1E3A;
+  --border: #2A2A50;
+
+  /* Text */
+  --text: #E8E8FF;
+  --sub: #8888CC;
+  --muted: #4A4A80;
+
+  /* Resolution states */
+  --confirmed: #00FFB3;
+  --partial: #FFB800;
+  --contradicted: #FF2D55;
+  --unresolvable: #4A4A80;
+  --warning: #FF8C00;
+
+  /* Player colors */
+  --p1: #00FFB3;
+  --p2: #FF5C00;
+  --p3: #B400FF;
+  --p4: #FFD600;
+  --p5: #FF006E;
+  --p6: #00B4FF;
+
+  /* Status glow variants */
+  --confirmed-glow: rgba(0, 255, 179, 0.15);
+  --contradicted-glow: rgba(255, 45, 85, 0.15);
+  --partial-glow: rgba(255, 184, 0, 0.15);
+
+  /* Typography */
+  --font-display: 'Syne', system-ui, sans-serif;
+  --font-body: 'DM Sans', system-ui, sans-serif;
+  --font-mono: 'Space Mono', 'Courier New', monospace;
+
+  /* Spacing */
+  --grid: 8px;
+  --node-size: 64px;
+  --trace-width: 2px;
+
+  /* Transitions */
+  --signal-duration: 600ms;
+  --expand-duration: 300ms;
+  --ease-signal: cubic-bezier(0.16, 1, 0.3, 1);
+}
