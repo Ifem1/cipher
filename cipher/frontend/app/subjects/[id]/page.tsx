@@ -52,7 +52,7 @@ export default function SubjectPage() {
   }
 
   if (loading) return (
-    <div style={{ padding: "60px 72px" }}>
+    <div style={{ padding: "40px 52px" }}>
       <div style={{ display:"flex", alignItems:"center", gap:12 }}>
         <svg width="50" height="16"><circle cx="8" cy="8" r="6" fill="none" stroke="var(--trace)" strokeWidth="1.5"/><line x1="14" y1="8" x2="36" y2="8" stroke="var(--trace)" strokeWidth="1" strokeDasharray="4 3"/><circle cx="42" cy="8" r="6" fill="none" stroke="var(--confirmed)" strokeWidth="1.5"/></svg>
         <span style={{ fontFamily:"var(--font-mono)", fontSize:10, color:"var(--muted)", letterSpacing:"0.12em" }}>LOADING CIRCUIT…</span>
@@ -75,7 +75,7 @@ export default function SubjectPage() {
   const statusCol = STATUS_COLORS[subject.status] ?? "var(--muted)";
 
   return (
-    <div style={{ padding:"48px 72px", maxWidth:960 }}>
+    <div style={{ padding:"32px 52px", maxWidth:960 }}>
       <p style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.1em", marginBottom:32 }}>
         <Link href="/" style={{ color:"var(--sub)" }}>OBSERVATORY</Link>
         <span style={{ color:"var(--trace)" }}> → </span>
@@ -102,7 +102,7 @@ export default function SubjectPage() {
       {/* Stats */}
       <div style={{ display:"grid", gridTemplateColumns:"repeat(4,1fr)", gap:2, marginBottom:40 }}>
         {[["PLAYERS",`${subject.player_count}/${subject.max_players}`],["STAKE",`${stakeGEN} GEN`],["POT",`${potGEN} GEN`],["WINDOW",`${subject.obs_start} → ${subject.obs_end}`]].map(([l,v])=>(
-          <div key={l} style={{ padding:"16px 20px", background:"var(--deep)", border:"1px solid var(--border)", borderTop:"2px solid var(--trace)" }}>
+          <div key={l} style={{ padding:"12px 16px", background:"var(--deep)", border:"1px solid var(--border)", borderTop:"2px solid var(--trace)" }}>
             <p style={{ fontFamily:"var(--font-mono)", fontSize:8, color:"var(--muted)", letterSpacing:"0.15em", marginBottom:6 }}>{l}</p>
             <p style={{ fontFamily:"var(--font-mono)", fontSize:12, color:"var(--text)" }}>{v}</p>
           </div>

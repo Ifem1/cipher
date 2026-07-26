@@ -55,11 +55,11 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             left: 0,
             right: 0,
             zIndex: 50,
-            height: 56,
+            height: 44,
             display: "flex",
             alignItems: "center",
             justifyContent: "space-between",
-            padding: "0 24px 0 28px",
+            padding: "0 18px 0 20px",
             borderBottom: "1px solid var(--border)",
             background: "rgba(3,3,9,0.9)",
             backdropFilter: "blur(16px)",
@@ -67,7 +67,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             {/* CIPHER wordmark */}
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
               {/* Circuit node icon */}
-              <svg width="22" height="22" viewBox="0 0 22 22" fill="none">
+              <svg width="18" height="18" viewBox="0 0 22 22" fill="none">
                 <circle cx="11" cy="11" r="10" stroke="var(--confirmed)" strokeWidth="1.2"/>
                 <circle cx="11" cy="11" r="5" fill="var(--confirmed)" fillOpacity="0.15"/>
                 <circle cx="11" cy="11" r="2.5" fill="var(--confirmed)"/>
@@ -76,7 +76,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
                 <line x1="1" y1="11" x2="5" y2="11" stroke="var(--confirmed)" strokeWidth="1" opacity="0.5"/>
                 <line x1="17" y1="11" x2="21" y2="11" stroke="var(--confirmed)" strokeWidth="1" opacity="0.5"/>
               </svg>
-              <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 16, letterSpacing: "0.3em", color: "var(--text)" }}>
+              <span style={{ fontFamily: "var(--font-display)", fontWeight: 800, fontSize: 13, letterSpacing: "0.3em", color: "var(--text)" }}>
                 CIPHER
               </span>
             </div>
@@ -84,7 +84,7 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
             <WalletButton />
           </header>
 
-          <main style={{ paddingLeft: 120, paddingTop: 56, minHeight: "100vh" }}>
+          <main style={{ paddingLeft: 88, paddingTop: 44, minHeight: "100vh" }}>
             {children}
           </main>
         </WalletProvider>

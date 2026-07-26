@@ -16,10 +16,10 @@ export function OrbitalNav() {
       aria-label="Main navigation"
       style={{
         position: "fixed",
-        top: 56,
+        top: 44,
         left: 0,
         bottom: 0,
-        width: 120,
+        width: 88,
         zIndex: 40,
         display: "flex",
         flexDirection: "column",
@@ -43,7 +43,7 @@ export function OrbitalNav() {
         zIndex: 0,
       }}/>
 
-      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 32, alignItems: "center" }}>
+      <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
         {STOPS.map((stop, i) => {
           const active = pathname === stop.href || (stop.href !== "/" && pathname.startsWith(stop.href));
           return (
@@ -67,8 +67,8 @@ export function OrbitalNav() {
             >
               {/* Node circle */}
               <div style={{
-                width: 36,
-                height: 36,
+                width: 28,
+                height: 28,
                 borderRadius: "50%",
                 border: `${active ? 2 : 1}px solid ${active ? "var(--confirmed)" : "var(--border)"}`,
                 background: active ? "rgba(0,255,179,0.08)" : "var(--deep)",
@@ -80,8 +80,8 @@ export function OrbitalNav() {
               }}>
                 {/* Inner dot */}
                 <div style={{
-                  width: active ? 10 : 6,
-                  height: active ? 10 : 6,
+                  width: active ? 8 : 5,
+                  height: active ? 8 : 5,
                   borderRadius: "50%",
                   background: active ? "var(--confirmed)" : "var(--muted)",
                   transition: "all 0.2s var(--ease-surge)",
@@ -90,11 +90,11 @@ export function OrbitalNav() {
                 {active && (
                   <div style={{
                     position: "absolute",
-                    left: -19,
+                    left: -13,
                     top: "50%",
                     transform: "translateY(-50%)",
                     width: 3,
-                    height: 20,
+                    height: 16,
                     background: "var(--confirmed)",
                     borderRadius: "0 2px 2px 0",
                   }}/>

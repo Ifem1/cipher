@@ -168,7 +168,7 @@ export default function Home() {
   return (
     <div>
       {/* ── HERO ─────────────────────────────────────────────────────────── */}
-      <section style={{ position: "relative", minHeight: "calc(100vh - 56px)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 72px", overflow: "hidden" }}>
+      <section style={{ position: "relative", minHeight: "calc(100vh - 44px)", display: "flex", flexDirection: "column", justifyContent: "center", padding: "0 52px", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, opacity: 0.28 }}>
           <HeroCircuit />
         </div>
@@ -185,16 +185,16 @@ export default function Home() {
 
           <h1 style={{
             fontFamily: "var(--font-display)", fontWeight: 800,
-            fontSize: "clamp(52px, 6.5vw, 96px)",
-            lineHeight: 1.0, letterSpacing: "-0.025em",
-            color: "var(--text)", marginBottom: 24,
+            fontSize: "clamp(36px, 4.5vw, 64px)",
+            lineHeight: 1.05, letterSpacing: "-0.025em",
+            color: "var(--text)", marginBottom: 20,
           }}>
             Build the logic.<br/>
             <span style={{ color: "var(--confirmed)" }}>Watch reality</span><br/>
             run it.
           </h1>
 
-          <p style={{ fontFamily: "var(--font-body)", fontSize: 18, color: "var(--sub)", lineHeight: 1.7, maxWidth: 500, marginBottom: 52 }}>
+          <p style={{ fontFamily: "var(--font-body)", fontSize: 14, color: "var(--sub)", lineHeight: 1.7, maxWidth: 480, marginBottom: 36 }}>
             Construct dependency-linked claim lattices about real-world events.
             GenLayer resolves each node against live public evidence.
             Accuracy earns. Inaccuracy penalises.
@@ -204,17 +204,17 @@ export default function Home() {
             <Link href="/subjects/new" style={{
               fontFamily: "var(--font-mono)", fontWeight: 700, fontSize: 12,
               letterSpacing: "0.1em", textTransform: "uppercase",
-              padding: "14px 32px",
+              padding: "11px 24px",
               background: "var(--confirmed)", color: "var(--void)",
               display: "inline-flex", alignItems: "center", gap: 8,
             }}>
-              <svg width="12" height="12" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
+              <svg width="10" height="10" viewBox="0 0 12 12"><circle cx="6" cy="6" r="5" stroke="currentColor" strokeWidth="1.5"/><circle cx="6" cy="6" r="2" fill="currentColor"/></svg>
               New Circuit
             </Link>
             <a href="#observatory" style={{
-              fontFamily: "var(--font-mono)", fontSize: 12,
+              fontFamily: "var(--font-mono)", fontSize: 11,
               letterSpacing: "0.1em", textTransform: "uppercase",
-              padding: "14px 32px",
+              padding: "11px 24px",
               border: "1px solid var(--border)", color: "var(--sub)",
               display: "inline-flex", alignItems: "center", gap: 6,
             }}>
@@ -222,7 +222,7 @@ export default function Home() {
             </a>
           </div>
 
-          <div style={{ display: "flex", gap: 40, marginTop: 60, flexWrap: "wrap" }}>
+          <div style={{ display: "flex", gap: 32, marginTop: 40, flexWrap: "wrap" }}>
             {[["PROTOCOL","GenLayer"],["NETWORK","StudioNet"],["SETTLEMENT","Optimistic Democracy"],["ADJUDICATION","LLM + Live Web"]].map(([k,v]) => (
               <div key={k}>
                 <p style={{ fontFamily: "var(--font-mono)", fontSize: 8, color: "var(--muted)", letterSpacing: "0.15em", marginBottom: 4 }}>{k}</p>
@@ -240,15 +240,15 @@ export default function Home() {
       </section>
 
       {/* ── HOW IT WORKS ─────────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 72px", borderTop: "1px solid var(--border)", background: "var(--deep)" }}>
+      <section style={{ padding: "64px 52px", borderTop: "1px solid var(--border)", background: "var(--deep)" }}>
         <div style={{ maxWidth: 960 }}>
-          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 56 }}>
+          <div style={{ display: "flex", alignItems: "center", gap: 16, marginBottom: 40 }}>
             <div style={{ flex: 1, height: 1, background: "var(--trace)" }}/>
             <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--muted)", letterSpacing: "0.22em", whiteSpace: "nowrap" }}>THE PROTOCOL</span>
             <div style={{ flex: 1, height: 1, background: "var(--trace)" }}/>
           </div>
 
-          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "48px 80px" }}>
+          <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "32px 56px" }}>
             {[
               ["01","Propose a Subject","Define a real-world event with a bounded observation window and evidence policy. GenLayer reviews whether your subject is independently resolvable before a single player joins."],
               ["02","Build Your Lattice","Construct a directed acyclic graph of claim nodes. Terminal facts, conditional chains, conjunctive dependencies. Allocate exactly 100 weight points across your 3–7 nodes."],
@@ -256,10 +256,10 @@ export default function Home() {
               ["04","Reality Adjudicates","GenLayer resolves each terminal node against live public evidence. Confirmed parents activate children. Contradicted parents collapse them. Your score is how much of your logic reality confirmed."],
             ].map(([n,t,b]) => (
               <div key={n} style={{ display: "flex", gap: 20 }}>
-                <div style={{ flexShrink: 0, width: 40, height: 40, borderRadius: "50%", border: "1px solid var(--confirmed)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 12, color: "var(--confirmed)", fontWeight: 700 }}>{n}</div>
+                <div style={{ flexShrink: 0, width: 32, height: 32, borderRadius: "50%", border: "1px solid var(--confirmed)", display: "flex", alignItems: "center", justifyContent: "center", fontFamily: "var(--font-mono)", fontSize: 11, color: "var(--confirmed)", fontWeight: 700 }}>{n}</div>
                 <div>
-                  <p style={{ fontFamily: "var(--font-display)", fontSize: 16, fontWeight: 700, marginBottom: 8, color: "var(--text)" }}>{t}</p>
-                  <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--sub)", lineHeight: 1.7 }}>{b}</p>
+                  <p style={{ fontFamily: "var(--font-display)", fontSize: 14, fontWeight: 700, marginBottom: 6, color: "var(--text)" }}>{t}</p>
+                  <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--sub)", lineHeight: 1.65 }}>{b}</p>
                 </div>
               </div>
             ))}
@@ -268,8 +268,8 @@ export default function Home() {
       </section>
 
       {/* ── FEATURE GRID ─────────────────────────────────────────────────── */}
-      <section style={{ padding: "96px 72px", borderTop: "1px solid var(--border)" }}>
-        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(28px,3.5vw,44px)", fontWeight: 800, color: "var(--text)", marginBottom: 56, maxWidth: 600, letterSpacing: "-0.01em", lineHeight: 1.1 }}>
+      <section style={{ padding: "64px 52px", borderTop: "1px solid var(--border)" }}>
+        <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(22px,2.8vw,34px)", fontWeight: 800, color: "var(--text)", marginBottom: 40, maxWidth: 560, letterSpacing: "-0.01em", lineHeight: 1.1 }}>
           Not a prediction market.<br/>
           <span style={{ color: "var(--sub)", fontWeight: 400 }}>A logic-accuracy protocol.</span>
         </h2>
@@ -283,21 +283,21 @@ export default function Home() {
             { accent: "var(--p3)", title: "Proportional Payout", body: "No winner-takes-all. Score above the minimum threshold and receive your proportional share of the pot. Accuracy earns continuously." },
             { accent: "var(--warning)", title: "Decentralised Adjudication", body: "GenLayer validators independently evaluate each node resolution. No single party controls the outcome. Agreement via Optimistic Democracy." },
           ].map(f => (
-            <div key={f.title} style={{ padding: "28px 24px", background: "var(--deep)", border: "1px solid var(--border)", borderTop: `2px solid ${f.accent}` }}>
-              <div style={{ width: 8, height: 8, borderRadius: "50%", background: f.accent, marginBottom: 20, opacity: 0.9 }}/>
-              <p style={{ fontFamily: "var(--font-display)", fontSize: 15, fontWeight: 700, color: "var(--text)", marginBottom: 10 }}>{f.title}</p>
-              <p style={{ fontFamily: "var(--font-body)", fontSize: 13, color: "var(--sub)", lineHeight: 1.65 }}>{f.body}</p>
+            <div key={f.title} style={{ padding: "20px 18px", background: "var(--deep)", border: "1px solid var(--border)", borderTop: `2px solid ${f.accent}` }}>
+              <div style={{ width: 7, height: 7, borderRadius: "50%", background: f.accent, marginBottom: 14, opacity: 0.9 }}/>
+              <p style={{ fontFamily: "var(--font-display)", fontSize: 13, fontWeight: 700, color: "var(--text)", marginBottom: 8 }}>{f.title}</p>
+              <p style={{ fontFamily: "var(--font-body)", fontSize: 12, color: "var(--sub)", lineHeight: 1.6 }}>{f.body}</p>
             </div>
           ))}
         </div>
       </section>
 
       {/* ── OBSERVATORY ──────────────────────────────────────────────────── */}
-      <section id="observatory" style={{ padding: "96px 72px", borderTop: "1px solid var(--border)", background: "var(--deep)" }}>
+      <section id="observatory" style={{ padding: "64px 52px", borderTop: "1px solid var(--border)", background: "var(--deep)" }}>
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "flex-end", marginBottom: 40 }}>
           <div>
             <p style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--confirmed)", letterSpacing: "0.22em", textTransform: "uppercase", marginBottom: 8 }}>OBSERVATORY</p>
-            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 28, fontWeight: 700, color: "var(--text)" }}>Live Circuits</h2>
+            <h2 style={{ fontFamily: "var(--font-display)", fontSize: 22, fontWeight: 700, color: "var(--text)" }}>Live Circuits</h2>
           </div>
           <Link href="/subjects/new" style={{ fontFamily: "var(--font-mono)", fontSize: 10, letterSpacing: "0.12em", color: "var(--confirmed)", padding: "9px 22px", border: "1px solid var(--confirmed)" }}>
             + NEW CIRCUIT
@@ -342,7 +342,7 @@ export default function Home() {
       </section>
 
       {/* ── CTA ──────────────────────────────────────────────────────────── */}
-      <section style={{ padding: "120px 72px", borderTop: "1px solid var(--border)", textAlign: "center", position: "relative", overflow: "hidden" }}>
+      <section style={{ padding: "80px 52px", borderTop: "1px solid var(--border)", textAlign: "center", position: "relative", overflow: "hidden" }}>
         <div style={{ position: "absolute", inset: 0, opacity: 0.04 }}>
           <svg width="100%" height="100%">
             <defs><pattern id="ctad" width="64" height="64" patternUnits="userSpaceOnUse"><circle cx="32" cy="32" r="1" fill="var(--confirmed)"/></pattern></defs>
@@ -351,15 +351,15 @@ export default function Home() {
         </div>
         <div style={{ position: "relative", zIndex: 1 }}>
           <p style={{ fontFamily: "var(--font-mono)", fontSize: 10, color: "var(--confirmed)", letterSpacing: "0.25em", marginBottom: 28 }}>CIPHER IS WHERE</p>
-          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(24px,3.5vw,48px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.15, letterSpacing: "-0.02em", maxWidth: 680, margin: "0 auto 48px" }}>
+          <h2 style={{ fontFamily: "var(--font-display)", fontSize: "clamp(18px,2.5vw,34px)", fontWeight: 800, color: "var(--text)", lineHeight: 1.2, letterSpacing: "-0.02em", maxWidth: 560, margin: "0 auto 36px" }}>
             Players build logical models of the future, stake on their accuracy, and GenLayer runs reality through the circuit.
           </h2>
           {address ? (
-            <Link href="/subjects/new" style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "16px 40px", background: "var(--confirmed)", color: "var(--void)", display: "inline-block" }}>
+            <Link href="/subjects/new" style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "12px 28px", background: "var(--confirmed)", color: "var(--void)", display: "inline-block" }}>
               Launch a Circuit →
             </Link>
           ) : (
-            <button onClick={connect} style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "16px 40px", background: "var(--confirmed)", color: "var(--void)", border: "none", cursor: "pointer" }}>
+            <button onClick={connect} style={{ fontFamily: "var(--font-mono)", fontSize: 13, fontWeight: 700, letterSpacing: "0.08em", textTransform: "uppercase", padding: "12px 28px", background: "var(--confirmed)", color: "var(--void)", border: "none", cursor: "pointer" }}>
               Connect Wallet →
             </button>
           )}
@@ -367,7 +367,7 @@ export default function Home() {
       </section>
 
       {/* ── FOOTER ───────────────────────────────────────────────────────── */}
-      <footer style={{ borderTop: "1px solid var(--border)", padding: "28px 72px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
+      <footer style={{ borderTop: "1px solid var(--border)", padding: "20px 52px", display: "flex", justifyContent: "space-between", alignItems: "center", flexWrap: "wrap", gap: 12 }}>
         <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <svg width="14" height="14" viewBox="0 0 14 14"><circle cx="7" cy="7" r="6" stroke="var(--confirmed)" strokeWidth="1"/><circle cx="7" cy="7" r="2" fill="var(--confirmed)"/></svg>
           <span style={{ fontFamily: "var(--font-mono)", fontSize: 9, color: "var(--muted)", letterSpacing: "0.15em" }}>CIPHER PROTOCOL</span>

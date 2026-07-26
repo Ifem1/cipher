@@ -57,11 +57,11 @@ export default function NewSubjectPage() {
   );
 
   return (
-    <div style={{ padding:"48px 72px", maxWidth:720 }}>
+    <div style={{ padding:"32px 52px", maxWidth:680 }}>
       <p style={{ fontFamily:"var(--font-mono)", fontSize:9, color:"var(--muted)", letterSpacing:"0.1em", marginBottom:32 }}>
         OBSERVATORY → <span style={{ color:"var(--confirmed)" }}>NEW CIRCUIT</span>
       </p>
-      <h1 style={{ fontFamily:"var(--font-display)", fontSize:32, fontWeight:800, letterSpacing:"-0.02em", marginBottom:8, color:"var(--text)" }}>Initialise Subject</h1>
+      <h1 style={{ fontFamily:"var(--font-display)", fontSize:24, fontWeight:800, letterSpacing:"-0.02em", marginBottom:8, color:"var(--text)" }}>Initialise Subject</h1>
       <p style={{ fontFamily:"var(--font-body)", fontSize:14, color:"var(--sub)", marginBottom:48 }}>Define the event, set the evidence policy, and deploy your circuit on GenLayer.</p>
 
       {/* Stage track */}
