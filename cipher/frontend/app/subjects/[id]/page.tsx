@@ -1,11 +1,12 @@
 "use client";
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { useParams } from "next/navigation";
 import Link from "next/link";
 import { CipherContractClient, Subject, PlayerInfo } from "@/lib/genlayer/contract";
 import { TxSpinner } from "@/components/ui/TxSpinner";
 import { TxPhase } from "@/lib/genlayer/status";
 import { useWallet } from "@/lib/wallet/WalletContext";
+import { errorMessage } from "@/lib/errors";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "";
 const PLAYER_COLORS = ["var(--p1)","var(--p2)","var(--p3)","var(--p4)","var(--p5)","var(--p6)"];
@@ -28,17 +29,20 @@ export default function SubjectPage() {
   const [txPhase, setTxPhase] = useState<TxPhase>("idle");
   const [txError, setTxError] = useState<string | undefined>();
 
-  async function load() {
+  const load = useCallback(async () => {
     if (!CONTRACT_ADDRESS) return;
     try {
       const client = new CipherContractClient(CONTRACT_ADDRESS, address ?? undefined);
       const [sub, pl] = await Promise.all([client.getSubject(id), client.getPlayerList(id)]);
       setSubject(sub); setPlayers(pl);
       if (address) { const info = await client.getPlayerInfo(id, address).catch(() => null); setMyInfo(info); }
-    } catch (e: any) { setError(e?.message ?? "Failed to load"); }
+    } catch (e: unknown) { setError(errorMessage(e, "Failed to load")); }
     finally { setLoading(false); }
-  }
-  useEffect(() => { load(); }, [id, address]);
+  }, [address, id]);
+
+  useEffect(() => {
+    void Promise.resolve().then(load);
+  }, [load]);
 
   async function tx(fn: (c: CipherContractClient) => Promise<unknown>) {
     if (!address) return;
@@ -48,7 +52,7 @@ export default function SubjectPage() {
       await fn(new CipherContractClient(CONTRACT_ADDRESS, address));
       setTxPhase("accepted");
       await load();
-    } catch (e: any) { setTxPhase("failed"); setTxError(e?.message); }
+    } catch (e: unknown) { setTxPhase("failed"); setTxError(errorMessage(e, "Transaction failed.")); }
   }
 
   if (loading) return (

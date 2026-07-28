@@ -18,3 +18,5 @@ cipher/frontend/.next-dev*.log
 # Logs and OS files
 *.log
 .DS_Store
+
+.vercel

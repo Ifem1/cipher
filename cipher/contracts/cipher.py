@@ -91,6 +91,7 @@ class CipherContract(gl.Contract):
     sub_constitution_json: TreeMap[str, str]
     sub_adjudication_report: TreeMap[str, str]
     sub_resolution_report: TreeMap[str, str]
+    sub_appeal_bond_total: TreeMap[str, u256]
 
     # ── Player roster (key: "{subject_id}:{index}") ──────────────────────────
     sub_player_at: TreeMap[str, str]
@@ -165,6 +166,7 @@ class CipherContract(gl.Contract):
         self.sub_constitution_json[sid] = json.dumps(constitution)
         self.sub_adjudication_report[sid] = ""
         self.sub_resolution_report[sid] = ""
+        self.sub_appeal_bond_total[sid] = u256(0)
 
         return sid
 
@@ -294,18 +296,29 @@ class CipherContract(gl.Contract):
         if sender != self.sub_proposer[sid]:
             raise gl.vm.UserError("CIPHER: only proposer can cancel")
 
-        self.sub_status[sid] = ST_CANCELLED
-        # Refund any players who joined (refunds credited as withdrawable)
-        count = int(self.sub_player_count[sid])
-        stake = self.sub_stake_per_player[sid]
-        for i in range(count):
-            p_addr = self.sub_player_at[f"{sid}:{i}"]
-            pk = f"{sid}:{p_addr}"
-            payout_key = f"refund:{pk}"
-            existing = int(self.player_payout.get(payout_key, u256(0)))
-            self.player_payout[payout_key] = u256(existing + int(stake))
+        self._refund_all_players(sid, include_appeal_bonds=False)
 
-        self.sub_status[sid] = ST_REFUNDED
+    @gl.public.write
+    def refund_underfilled_subject(self, subject_id: str) -> None:
+        sid = self._sid(subject_id)
+        status = self.sub_status.get(sid, "")
+        if status not in (ST_OPEN, ST_COMMITTED):
+            raise gl.vm.UserError("CIPHER: wrong state for underfilled refund")
+
+        count = int(self.sub_player_count[sid])
+        if count >= int(self.sub_min_players[sid]):
+            raise gl.vm.UserError("CIPHER: minimum players reached")
+
+        self._refund_all_players(sid, include_appeal_bonds=False)
+
+    @gl.public.write
+    def refund_insufficient_evidence(self, subject_id: str) -> None:
+        sid = self._sid(subject_id)
+        status = self.sub_status.get(sid, "")
+        if status != ST_INSUFFICIENT_EVIDENCE:
+            raise gl.vm.UserError("CIPHER: subject is not insufficient evidence")
+
+        self._refund_all_players(sid, include_appeal_bonds=True)
 
     # ──────────────────────────────────────────────────────────────────────────
     # NON-DET WRITE: Submit for adjudicability review
@@ -408,7 +421,7 @@ Return JSON only, no other text:
     def request_resolution(self, subject_id: str) -> None:
         sid = self._sid(subject_id)
         status = self.sub_status.get(sid, "")
-        if status not in (ST_REVEAL_WINDOW, ST_OBSERVATION_ACTIVE):
+        if status not in (ST_REVEAL_WINDOW, ST_OBSERVATION_ACTIVE, ST_APPEAL_PENDING):
             raise gl.vm.UserError("CIPHER: wrong state for resolution")
 
         self.sub_status[sid] = ST_RESOLUTION_PENDING
@@ -421,7 +434,7 @@ Return JSON only, no other text:
         constitution = self._constitution_from_input(constitution_str)
         source_policy = constitution.get("source_policy", "Use authoritative public news sources")
 
-        # Gather all terminal nodes from all revealed lattices
+        # Gather terminal nodes scoped by participant so local IDs cannot collide.
         terminal_nodes: dict = {}
         player_lattices: dict = {}
 
@@ -435,46 +448,56 @@ Return JSON only, no other text:
                     player_lattices[p_addr] = lattice
                     for node in lattice.get("nodes", []):
                         if node.get("type") == NT_TERMINAL:
-                            node_id = node["id"]
-                            if node_id not in terminal_nodes:
-                                terminal_nodes[node_id] = node
+                            local_id = node["id"]
+                            scoped_id = self._scoped_node_id(p_addr, local_id)
+                            terminal_nodes[scoped_id] = {
+                                "id": scoped_id,
+                                "local_id": local_id,
+                                "participant": p_addr,
+                                "claim": node.get("claim", ""),
+                            }
 
         def leader_fn():
             node_resolutions: dict = {}
             for node_id, node in terminal_nodes.items():
                 claim = node.get("claim", "")
+                participant = node.get("participant", "")
+                local_id = node.get("local_id", node_id)
                 node_prompt = f"""You are a prediction market resolution expert.
 
 SUBJECT ENTITY: {entity}
 OBSERVATION WINDOW: {obs_start} to {obs_end}
 SOURCE POLICY: {source_policy}
+PARTICIPANT: {participant}
+LOCAL TERMINAL ID: {local_id}
 
 CLAIM TO RESOLVE: "{claim}"
 
-Search for evidence from authoritative sources to determine if this claim is confirmed or contradicted as of the end of the observation window.
+Search only bounded, authenticated sources allowed by the source policy. Resolve the claim as of the end of the observation window. Do not rely on unsourced memory, social media chatter, or unverifiable summaries.
 
 Return JSON only:
 {{
   "node_id": "{node_id}",
+  "participant": "{participant}",
+  "local_id": "{local_id}",
   "outcome": "CONFIRMED" | "SUBSTANTIALLY_CONFIRMED" | "PARTIALLY_CONFIRMED" | "CONTRADICTED" | "UNRESOLVABLE",
   "confidence": 0-100,
   "evidence_summary": "brief factual summary of evidence found",
-  "sources": ["list of source URLs or citations"],
+  "sources": ["authenticated source URLs used for this exact verdict"],
   "rationale": "one paragraph explanation"
 }}"""
                 raw = gl.nondet.exec_prompt(node_prompt, response_format="json")
                 parsed = self._parse_llm_json(raw, f"node {node_id}")
-                if "outcome" not in parsed:
-                    raise gl.vm.UserError(f"CONSENSUS_OUTPUT: no outcome for node {node_id}")
-                if parsed["outcome"] not in VALID_OUTCOMES:
-                    raise gl.vm.UserError(f"CONSENSUS_OUTPUT: invalid outcome for node {node_id}: {parsed['outcome']}")
                 parsed["node_id"] = node_id
+                parsed["participant"] = participant
+                parsed["local_id"] = local_id
+                self._validate_resolution_record(parsed, constitution, node_id)
                 node_resolutions[node_id] = parsed
 
             # Propagate through each player's lattice
             player_scores: dict = {}
             for p_addr, lattice in player_lattices.items():
-                score = self._propagate_and_score(lattice, node_resolutions)
+                score = self._propagate_and_score(lattice, node_resolutions, p_addr)
                 player_scores[p_addr] = score
 
             # Check for insufficient evidence
@@ -505,14 +528,37 @@ Return JSON only:
                 for node_id, leader_res in leader_resolutions.items():
                     if not isinstance(leader_res, dict):
                         return False
-                    if leader_res.get("node_id") != node_id:
+                    if not self._resolution_record_is_valid(leader_res, constitution, node_id):
                         return False
-                    if leader_res.get("outcome") not in VALID_OUTCOMES:
+                    check_prompt = f"""Independently verify this payout-driving verdict.
+
+SUBJECT ENTITY: {entity}
+OBSERVATION WINDOW: {obs_start} to {obs_end}
+SOURCE POLICY: {source_policy}
+PARTICIPANT: {leader_res.get("participant", "")}
+LOCAL TERMINAL ID: {leader_res.get("local_id", "")}
+CLAIM: "{terminal_nodes[node_id].get("claim", "")}"
+PROPOSED OUTCOME: {leader_res.get("outcome", "")}
+PROPOSED SOURCES: {json.dumps(leader_res.get("sources", []))}
+
+Use only bounded, authenticated sources allowed by the source policy. Return JSON only:
+{{
+  "verified": true or false,
+  "outcome": "CONFIRMED" | "SUBSTANTIALLY_CONFIRMED" | "PARTIALLY_CONFIRMED" | "CONTRADICTED" | "UNRESOLVABLE",
+  "sources": ["authenticated source URLs used"]
+}}"""
+                    raw = gl.nondet.exec_prompt(check_prompt, response_format="json")
+                    checked = self._parse_llm_json(raw, f"validator node {node_id}")
+                    if not checked.get("verified", False):
+                        return False
+                    if checked.get("outcome") != leader_res.get("outcome"):
+                        return False
+                    if not self._sources_are_authenticated(checked.get("sources", []), constitution):
                         return False
 
                 expected_scores = {}
                 for p_addr, lattice in player_lattices.items():
-                    expected_scores[p_addr] = self._propagate_and_score(lattice, leader_resolutions)
+                    expected_scores[p_addr] = self._propagate_and_score(lattice, leader_resolutions, p_addr)
 
                 if data.get("player_scores", {}) != expected_scores:
                     return False
@@ -530,11 +576,6 @@ Return JSON only:
 
         result = gl.vm.run_nondet_unsafe(leader_fn, validator_fn)
 
-        all_unresolvable = result.get("all_unresolvable", False)
-        if all_unresolvable:
-            self.sub_status[sid] = ST_INSUFFICIENT_EVIDENCE
-            return
-
         node_resolutions = result.get("node_resolutions", {})
         player_scores = result.get("player_scores", {})
 
@@ -543,6 +584,11 @@ Return JSON only:
             "node_resolutions": node_resolutions,
             "player_scores": player_scores,
         })
+
+        all_unresolvable = result.get("all_unresolvable", False)
+        if all_unresolvable:
+            self.sub_status[sid] = ST_INSUFFICIENT_EVIDENCE
+            return
 
         # Persist individual player scores
         for p_addr, score in player_scores.items():
@@ -572,10 +618,11 @@ Return JSON only:
         stake = int(self.sub_stake_per_player[sid])
         appeal_bond = (stake * APPEAL_BOND_BPS) // 10000
         received = int(gl.message.value)
-        if received < appeal_bond:
-            raise gl.vm.UserError(f"CIPHER: appeal bond must be at least {appeal_bond} wei")
+        if received != appeal_bond:
+            raise gl.vm.UserError(f"CIPHER: appeal bond must be exactly {appeal_bond} wei")
 
         self.player_appeal_bond_paid[pk] = True
+        self.sub_appeal_bond_total[sid] = u256(int(self.sub_appeal_bond_total.get(sid, u256(0))) + received)
         self.sub_status[sid] = ST_APPEAL_PENDING
 
     # ──────────────────────────────────────────────────────────────────────────
@@ -592,11 +639,13 @@ Return JSON only:
         gross_pot = int(self.sub_gross_pot[sid])
         fee_bps = int(self.fee_bps)
 
+        appeal_bonds = int(self.sub_appeal_bond_total.get(sid, u256(0)))
         fee = (gross_pot * fee_bps) // 10000
         net_pot = gross_pot - fee
 
-        # Accumulate treasury fee
-        self.treasury = u256(int(self.treasury) + fee)
+        # Accumulate treasury fee and resolved appeal bonds.
+        self.treasury = u256(int(self.treasury) + fee + appeal_bonds)
+        self.sub_appeal_bond_total[sid] = u256(0)
 
         # Gather eligible player scores
         scores: dict = {}
@@ -611,12 +660,7 @@ Return JSON only:
 
         if score_sum == 0:
             # No eligible winners — refund all players
-            stake = int(self.sub_stake_per_player[sid])
-            for i in range(count):
-                p_addr = self.sub_player_at[f"{sid}:{i}"]
-                pk = f"{sid}:{p_addr}"
-                self.player_payout[pk] = u256(stake)
-            self.sub_status[sid] = ST_REFUNDED
+            self._refund_all_players(sid, include_appeal_bonds=True)
             return
 
         # Distribute proportionally
@@ -922,7 +966,59 @@ Return JSON only:
                 if dfs(nid):
                     raise gl.vm.UserError("LATTICE: cycle detected in lattice graph")
 
-    def _propagate_and_score(self, lattice: dict, terminal_resolutions: dict) -> int:
+    def _scoped_node_id(self, participant: str, local_id: str) -> str:
+        return f"{self._addr_hex(participant)}::{local_id}"
+
+    def _sources_are_authenticated(self, sources, constitution: dict) -> bool:
+        min_sources = int(constitution.get("min_primary_sources_per_node", 1))
+        if not isinstance(sources, list) or len(sources) < min_sources:
+            return False
+        for source in sources:
+            if not isinstance(source, str):
+                return False
+            normalized = source.strip().lower()
+            if not (normalized.startswith("https://") or normalized.startswith("http://")):
+                return False
+            if len(normalized) < 12:
+                return False
+        return True
+
+    def _resolution_record_is_valid(self, record: dict, constitution: dict, node_id: str) -> bool:
+        if not isinstance(record, dict):
+            return False
+        if record.get("node_id") != node_id:
+            return False
+        if record.get("outcome") not in VALID_OUTCOMES:
+            return False
+        if not isinstance(record.get("participant", ""), str) or record.get("participant", "") == "":
+            return False
+        if not isinstance(record.get("local_id", ""), str) or record.get("local_id", "") == "":
+            return False
+        if not self._sources_are_authenticated(record.get("sources", []), constitution):
+            return False
+        confidence = int(record.get("confidence", 0))
+        return confidence >= 0 and confidence <= 100
+
+    def _validate_resolution_record(self, record: dict, constitution: dict, node_id: str) -> None:
+        if not self._resolution_record_is_valid(record, constitution, node_id):
+            raise gl.vm.UserError(f"CONSENSUS_OUTPUT: invalid resolution evidence for node {node_id}")
+
+    def _refund_all_players(self, sid: str, include_appeal_bonds: bool) -> None:
+        count = int(self.sub_player_count[sid])
+        stake = int(self.sub_stake_per_player[sid])
+        for i in range(count):
+            p_addr = self.sub_player_at[f"{sid}:{i}"]
+            pk = f"{sid}:{p_addr}"
+            refund = stake
+            if include_appeal_bonds and self.player_appeal_bond_paid.get(pk, False):
+                refund += (stake * APPEAL_BOND_BPS) // 10000
+            self.player_payout[pk] = u256(refund)
+
+        if include_appeal_bonds:
+            self.sub_appeal_bond_total[sid] = u256(0)
+        self.sub_status[sid] = ST_REFUNDED
+
+    def _propagate_and_score(self, lattice: dict, terminal_resolutions: dict, participant: str = "") -> int:
         """
         Propagate resolutions through lattice DAG and return integer score (0–10000).
         Score is weight-proportional; UNRESOLVABLE weights redistribute to resolved nodes.
@@ -961,7 +1057,8 @@ Return JSON only:
             parents = node_parents[nid]
 
             if ntype == NT_TERMINAL:
-                outcome = terminal_resolutions.get(nid, {}).get("outcome", RO_UNRESOLVABLE)
+                scoped_id = self._scoped_node_id(participant, nid) if participant else nid
+                outcome = terminal_resolutions.get(scoped_id, terminal_resolutions.get(nid, {})).get("outcome", RO_UNRESOLVABLE)
                 node_outcome[nid] = outcome
 
             elif ntype == NT_INVERSE:

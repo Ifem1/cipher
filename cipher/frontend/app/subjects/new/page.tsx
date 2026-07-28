@@ -6,6 +6,7 @@ import { CipherContractClient } from "@/lib/genlayer/contract";
 import { TxSpinner } from "@/components/ui/TxSpinner";
 import { TxPhase } from "@/lib/genlayer/status";
 import { useWallet } from "@/lib/wallet/WalletContext";
+import { errorMessage } from "@/lib/errors";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "";
 const STAGES = ["Define", "Evidence Policy", "Review & Deploy"];
@@ -45,7 +46,7 @@ export default function NewSubjectPage() {
       await client.createSubject({ title:form.title, description:form.description, entity:form.entity, obs_start:form.obs_start, obs_end:form.obs_end, min_players:Number(form.min_players), max_players:Number(form.max_players), stake_wei:String(BigInt(Math.floor(parseFloat(form.stake_gen)*1e18))), constitution_json:JSON.stringify(constitution) });
       setTxPhase("accepted");
       setTimeout(()=>router.push("/"),1400);
-    } catch(e:any) { setTxPhase("failed"); setTxError(e?.message??"Transaction failed."); }
+    } catch(e: unknown) { setTxPhase("failed"); setTxError(errorMessage(e, "Transaction failed.")); }
   }
 
   if (!address) return (

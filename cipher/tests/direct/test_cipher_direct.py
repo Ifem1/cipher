@@ -310,6 +310,42 @@ def test_propagation_disjunctive_any_parent(direct_deploy, direct_vm):
     assert score == 67  # n1+n3 confirmed (33+34=67), n2 contradicted (0)
 
 
+def test_scoped_terminal_ids_prevent_player_collisions(direct_deploy, direct_vm):
+    contract = direct_deploy(CONTRACT_PATH)
+    player_a = "0xaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"
+    player_b = "0xbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"
+    lattice = {
+        "nodes": [
+            {"id": "n1", "type": "TERMINAL", "weight": 100, "claim": "x"},
+        ],
+        "edges": []
+    }
+    resolutions = {
+        f"{player_a}::n1": {"outcome": "CONFIRMED"},
+        f"{player_b}::n1": {"outcome": "CONTRADICTED"},
+    }
+
+    assert contract._propagate_and_score(lattice, resolutions, player_a) == 100
+    assert contract._propagate_and_score(lattice, resolutions, player_b) == 0
+
+
+def test_resolution_record_requires_authenticated_sources(direct_deploy, direct_vm):
+    contract = direct_deploy(CONTRACT_PATH)
+    constitution = json.loads(CONSTITUTION)
+    good = {
+        "node_id": "0xabc::n1",
+        "participant": "0xabc",
+        "local_id": "n1",
+        "outcome": "CONFIRMED",
+        "confidence": 90,
+        "sources": ["https://www.reuters.com/example"],
+    }
+    bad = {**good, "sources": ["Reuters said so"]}
+
+    assert contract._resolution_record_is_valid(good, constitution, "0xabc::n1") is True
+    assert contract._resolution_record_is_valid(bad, constitution, "0xabc::n1") is False
+
+
 # ── Cancel / refund ────────────────────────────────────────────────────────────
 
 def test_proposer_can_cancel(direct_deploy, direct_vm, direct_alice):
@@ -319,6 +355,51 @@ def test_proposer_can_cancel(direct_deploy, direct_vm, direct_alice):
     contract.cancel_subject(sid)
     sub = contract.get_subject(sid)
     assert sub["status"] == "REFUNDED"
+
+
+def test_cancel_refund_is_withdrawable_by_player(direct_deploy, direct_vm, direct_alice, direct_bob):
+    contract = direct_deploy(CONTRACT_PATH)
+    sid = _create_subject(contract, direct_vm, direct_alice)
+    direct_vm.sender = direct_bob
+    direct_vm.value = STAKE
+    contract.join_circuit(sid)
+
+    direct_vm.sender = direct_alice
+    direct_vm.value = 0
+    contract.cancel_subject(sid)
+
+    bob_hex = "0x" + direct_bob.hex()
+    info = contract.get_withdrawable(sid, bob_hex)
+    assert info["amount"] == str(STAKE)
+
+
+def test_underfilled_subject_can_refund_joined_players(direct_deploy, direct_vm, direct_alice, direct_bob):
+    contract = direct_deploy(CONTRACT_PATH)
+    sid = _create_subject(contract, direct_vm, direct_alice, min_p=2, max_p=3)
+    direct_vm.sender = direct_bob
+    direct_vm.value = STAKE
+    contract.join_circuit(sid)
+
+    direct_vm.value = 0
+    contract.refund_underfilled_subject(sid)
+
+    assert contract.get_subject(sid)["status"] == "REFUNDED"
+    assert contract.get_withdrawable(sid, "0x" + direct_bob.hex())["amount"] == str(STAKE)
+
+
+def test_appeal_bond_is_tracked_and_refundable_on_insufficient_evidence(direct_deploy, direct_vm, direct_alice, direct_bob):
+    contract, sid = _setup_committed(direct_deploy, direct_vm, direct_alice, direct_bob)
+    contract.sub_status[sid] = "PROVISIONAL_SCORES"
+
+    direct_vm.sender = direct_alice
+    direct_vm.value = STAKE // 10
+    contract.submit_appeal(sid)
+    assert contract.sub_appeal_bond_total[sid] == STAKE // 10
+
+    contract.sub_status[sid] = "INSUFFICIENT_EVIDENCE"
+    direct_vm.value = 0
+    contract.refund_insufficient_evidence(sid)
+    assert contract.get_withdrawable(sid, "0x" + direct_alice.hex())["amount"] == str(STAKE + STAKE // 10)
 
 
 def test_non_proposer_cannot_cancel(direct_deploy, direct_vm, direct_alice, direct_bob):

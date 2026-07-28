@@ -1,7 +1,7 @@
 "use client";
 import { useEffect, useState } from "react";
 import Link from "next/link";
-import { CipherContractClient } from "@/lib/genlayer/contract";
+import { CipherContractClient, Subject } from "@/lib/genlayer/contract";
 import { useWallet } from "@/lib/wallet/WalletContext";
 
 const CONTRACT_ADDRESS = process.env.NEXT_PUBLIC_CONTRACT_ADDRESS ?? "";
@@ -93,7 +93,7 @@ function HeroCircuit() {
 }
 
 /* ── Subject tile for observatory ────────────────────────────────────────── */
-function SubjectTile({ subject }: { subject: any }) {
+function SubjectTile({ subject }: { subject: Subject }) {
   const stakeGEN = (Number(subject.stake_per_player ?? "0") / 1e18).toFixed(3);
   const SC: Record<string, string> = {
     OPEN: "var(--confirmed)",
@@ -152,17 +152,21 @@ function SubjectTile({ subject }: { subject: any }) {
 /* ── Page ─────────────────────────────────────────────────────────────────── */
 export default function Home() {
   const { address, connect } = useWallet();
-  const [subjects, setSubjects] = useState<any[]>([]);
+  const [subjects, setSubjects] = useState<Subject[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
     if (!CONTRACT_ADDRESS) return;
-    setLoading(true);
-    const client = new CipherContractClient(CONTRACT_ADDRESS, address ?? undefined);
-    client.getAllSubjects()
-      .then(s => setSubjects(s))
-      .catch(() => {})
-      .finally(() => setLoading(false));
+    let mounted = true;
+    void Promise.resolve().then(() => {
+      setLoading(true);
+      const client = new CipherContractClient(CONTRACT_ADDRESS, address ?? undefined);
+      client.getAllSubjects()
+        .then(s => { if (mounted) setSubjects(s); })
+        .catch(() => {})
+        .finally(() => { if (mounted) setLoading(false); });
+    });
+    return () => { mounted = false; };
   }, [address]);
 
   return (

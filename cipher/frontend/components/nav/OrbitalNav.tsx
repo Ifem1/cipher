@@ -44,7 +44,7 @@ export function OrbitalNav() {
       }}/>
 
       <div style={{ position: "relative", zIndex: 1, display: "flex", flexDirection: "column", gap: 24, alignItems: "center" }}>
-        {STOPS.map((stop, i) => {
+        {STOPS.map((stop) => {
           const active = pathname === stop.href || (stop.href !== "/" && pathname.startsWith(stop.href));
           return (
             <Link

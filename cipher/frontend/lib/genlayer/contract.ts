@@ -109,4 +109,6 @@ export class CipherContractClient {
   finalizeSubject(subjectId: string) { return this.write("finalize_subject", [subjectId]); }
   withdraw(subjectId: string) { return this.write("withdraw", [subjectId]); }
   cancelSubject(subjectId: string) { return this.write("cancel_subject", [subjectId]); }
+  refundUnderfilledSubject(subjectId: string) { return this.write("refund_underfilled_subject", [subjectId]); }
+  refundInsufficientEvidence(subjectId: string) { return this.write("refund_insufficient_evidence", [subjectId]); }
 }
